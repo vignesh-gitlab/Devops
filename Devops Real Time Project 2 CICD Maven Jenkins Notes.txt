@@ -1,0 +1,230 @@
+https://github.com/amit873/Kubernetes-Ansible-Docker-Project.git
+
+https://github.com/vignesh-gitlab/Kubernetes-Ansible-Docker-Project.git
+
+---------------------
+1. Jenkins Instance - Amazon Linux EC2 - All TCP - 8GB
+
+sudo -i
+hostname jenkins
+vi /etc/hostname
+sudo su -
+
+Java Installation: 
+amazon-linux-extras install java-openjdk11 -y
+yum install java-1.8.0-openjdk
+java -version
+alternatives --config java
+   ---(select java 11)
+
+vi /etc/ssh/sshd_config
+   PasswordAuthentication yes
+service sshd reload
+
+Maven Installation :
+cd /opt
+wget https://mirrors.estointernet.in/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+tar -xvzf apache-maven-3.6.3-bin.tar.gz
+ls
+mv apache-maven-3.6.3 maven
+cd ~
+vi .bash_profile
+  M2_HOME=/opt/maven
+  M2=$M2_HOME/bin
+  PATH=$PATH:$JAVA_HOME:$M2_HOME:$M2:$HOME/bin
+  export PATH
+
+sudo su -
+echo $PATH
+echo $M2
+
+Jenkins Installation:
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+yum -y install jenkins
+systemctl start jenkins
+systemctl status jenkins
+chkconfig jenkins on
+
+vi /etc/sudoers
+  jenkins ALL=(ALL) NOPASSWD: ALL
+systemctl restart jenkins
+
+
+http://<jenkins_public_ip_address>:8080/
+cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+Manage Jenkins->Manage Plugins->Available
+  install plugins Github, Maven Invoker, Maven Integration, Publish Over SSH.
+
+
+
+
+-------------------------------------------------------------
+
+1. Ansible Instance - Amazon Linux EC2 - All TCP - 8GB
+
+sudo -i
+hostname ansible-host
+vi /etc/hostname
+sudo su -
+
+Java Installation: 
+amazon-linux-extras install java-openjdk11 -y
+yum install java-1.8.0-openjdk
+java -version
+alternatives --config java
+   ---(select java 11)
+
+vi /etc/ssh/sshd_config
+   PasswordAuthentication yes
+service sshd reload
+
+Python,pip and Ansible Installation:
+yum install python
+yum install python-pip -y
+
+pip install ansible
+ansible --version
+
+mkdir /etc/ansible
+cd /etc/ansible
+sudo vi hosts 
+   localhost
+ls
+cat hosts
+
+yum install docker -y
+docker --version
+service docker start
+service docker status
+
+useradd ansadmin
+passwd ansadmin
+
+usermod -aG docker ansadmin
+sudo su - ansadmin
+exit
+visudo
+   ansadmin ALL=(ALL) NOPASSWD: ALL
+
+
+
+----------------------------------------------------
+
+
+1. Docker Instance - Amazon Linux EC2 - All TCP - 8GB
+
+
+sudo -i
+hostname ansible-host
+vi /etc/hostname
+sudo su -
+
+Java Installation: 
+amazon-linux-extras install java-openjdk11 -y
+yum install java-1.8.0-openjdk -y
+java -version
+alternatives --config java
+   ---(select java 11)
+
+vi /etc/ssh/sshd_config
+   PasswordAuthentication yes
+service sshd reload
+
+yum install docker -y
+docker --version
+service docker start
+service docker status
+
+useradd ansadmin
+passwd ansadmin
+
+visudo
+   ansadmin ALL=(ALL) NOPASSWD: ALL
+usermod -aG docker ansadmin
+
+
+cd /opt
+ls
+sudo mkdir docker
+ls
+sudo chown -R ansadmin:ansadmin /opt/docker
+
+
+--------------------------------------------------
+
+Password Less Connection between Ansible and Docker Instance:
+
+Login to ansible instance.
+
+sudo su - ansadmin
+whoami
+ls -al
+pwd
+
+ssh-keygen
+  (press 3 times enter key)
+ls -al
+cd .ssh
+
+Copy created keys to all Ansible Managed Hosts - Docker Instance:
+
+ssh-copy-id ansadmin@<docker_pvt_ip_address>
+
+Login to Docker machine via  Ansible Instance:
+ssh ansadmin@<docker_pvt_ip_address>
+exit
+
+ssh-copy-id localhost
+
+ansible all -m ping
+
+----------------------------------------------------------
+
+Connection between Jenkins and Ansible Set MavenPath:
+
+Goto Jenkins console
+Manage Jenkins->Configure System->Publish Over SSH
+Name: ansible-server
+Hostname: ansible private ip address
+Username: ansadmin
+click on Advanced -> 
+Use password Authentication, or use a different key
+Passphrase/Password: ansadmin
+Click on Test Configuration ->
+If connection is Success and Save
+
+
+----------------------------------------------------------
+
+GitHub - Repository URL
+
+Login to Jenkins Instance
+
+yum install git -y
+git --version
+
+https://github.com/vignesh-gitlab/Kubernetes-Ansible-Docker-Project
+
+edit the hosts file and docker private ip address and commit it.
+
+
+ADD DockerHub Credentials in Ansible Instance:
+
+Login to Ansible Instance with root user.
+
+sudo su -
+docker login
+username
+password
+
+
+
+
+
+Docker service start failed when stop and start instances:
+Remove below file and restart docker:
+rm -rf /var/run/docker.pid
+systemctl restart docker
