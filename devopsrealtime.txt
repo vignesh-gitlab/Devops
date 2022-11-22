@@ -1,0 +1,242 @@
+https://calculator.s3.amazonaws.com/index.html?r=DUB&s=EC2&key=files/calc-346a1f48846942c6bcfc44698213ab830c935796&v=ver20200219tB
+
+
+
+jenkins installation:
+
+amazon-linux-extras install epel -y
+
+yum update -y
+
+wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
+
+rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+sudo amazon-linux-extras install java-openjdk11
+
+yum install jenkins –y
+
+systemctl start jenkins
+
+
+
+
+maven installation:
+wget http://mirrors.estointernet.in/apache/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+
+
+tar -xvf apache-maven-3.8.5-bin.tar.gz
+
+
+github: 
+https://github.com/damodaranj/my-app
+
+
+
+Docker
+how to build docker image??
+
+docker build -t <imagename> .
+
+
+how to push docker image to docker hub??
+
+docker login -u <username> -p <password>
+
+docker login
+
+username: 
+
+
+
+how to run docker container??
+
+docker run -itd --name <container name> -p "9000:8000" <imagename>
+
+
+S3 : 
+https://sants12421.s3.ap-south-1.amazonaws.com/sonarqube.docx
+
+
+
+
+
+
+From Mobile Notes:
+
+CI CD PROJECT --- REAL TIME PROJECT 
+
+
+1. GIT/BITBUCKET - VERSION CTRL TOOL - WHICH CODE STACK U VE WORKED WITH/APPLICATION CODE??---JAVA -- RAMESH JAVA DEVELOPER---100 JAVA FILES
+
+2. JENKINS/GITLAB/GITHUBACTION/CIRCLE CI/BAMBOO/SPINNAKER --- INTEGRATION TOOL
+
+3. MAVEN/ANT/GRADLE -- NEW---BUILD TOOL -- PACKAGE --- .WAR/.JAR/.EAR
+
+4. DOCKER/DOCKER SWARM/KUBERNETES -- CONTAINER TOOL ---
+
+5. TOMCAT/JBOSS/WEBSPHERE/WEBLOGIC --- SERVER ---
+
+6. SONARQUBE -- NEW --- CODE QUALITY TOOL ---
+
+7. NEXUS/JFROG -- NEW --- TOMORROW
+
+8. AWS/AZURE/GCP--- INFRASTRUCTURE --- CLOUD
+. POM.XML --- PROJECT OBJECT MODEL-- MAVEN FILE 
+
+MYWEB-0.0.5.WAR
+
+/VAR/LIB/JENKINS/WORKSPACE/<PROJECTNAME/TARGET/MYWEB-0.0.5.WAR
+
+
+
+LOCAL
+REMOTE
+CENTRAL
+
+
+2. DOCKER FILE
+
+
+/usr/local/tomcat/webapps/ --- deployment --- application
+
+/var/www/html
+
+3. JENKINS FILE --- groovy scripting
+
+stage === step
+
+maven3 --- alias name
+
+
+
+how to execute one script 
+
+./<scriptname> or sh <scriptname>
+
+
+how to build package using maven??
+
+./mvn package
+node{
+   stage('SCM Checkout'){
+     git 'https://github.com/damodaranj/my-app.git'
+   }
+   stage('Compile-Package'){
+
+      def mvnHome =  tool name: 'maven3', type: 'maven'   
+      sh "${mvnHome}/bin/mvn clean package"
+	  sh 'mv target/myweb*.war target/newapp.war'
+   }
+   stage('Build Docker Imager'){
+   sh 'docker build -t saidamo/myweb:0.0.2 .'
+   }
+   stage('Docker Image Push'){
+   withCredentials([string(credentialsId: 'dockerPass', variable: 'dockerPassword')]) {
+   sh "docker login -u saidamo -p ${dockerPassword}"
+    }
+   sh 'docker push saidamo/myweb:0.0.2'
+   }
+   stage('Docker deployment'){
+   sh 'docker run -d -p 8090:8080 --name tomcattest saidamo/myweb:0.0.2' 
+   }
+}
+}
+
+
+https://sants12421.s3.ap-south-1.amazonaws.com/sonarqube.docx
+
+https://community.sonarsource.com/t/sonarqube-service-doesnt-start-on-linux/256
+
+
+
+
+
+
+https://qiita.com/leechungkyu/items/86cad0396cf95b3b6973
+
+
+https://blog.sonatype.com/using-nexus-3-as-your-repository-part-3-docker-images
+
+http://65.2.169.41:8080/github-webhook/
+
+https://github.com/damodaranj/my-app/blob/master/Jenkinsfile
+
+----------------------------------------------------------------
+Sonarqube Installation
+-----
+MYSQL Commands: 
+
+
+CREATE DATABASE sonar CHARACTER SET utf8 COLLATE utf8_general_ci;
+Create a local and a remote user
+
+CREATE USER sonar@localhost IDENTIFIED BY 'sonar';
+CREATE USER sonar@'%' IDENTIFIED BY 'sonar';
+Grant database access permissions to users
+
+GRANT ALL ON sonar.* TO sonar@localhost;
+GRANT ALL ON sonar.* TO sonar@'%';
+check users and databases
+
+use mysql;
+show databases;
+SELECT User FROM mysql.user;
+FLUSH PRIVILEGES;
+QUIT
+
+
+Install sonarqube and create rds:
+# cd /opt
+# wget  https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-6.7.6.zip
+# unzip sonarqube-6.0.zip
+# mv /opt/sonarqube-6.0 /opt/sonar
+
+
+# sudo update-alternatives --config java
+
+java path : /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.342.b07-1.amzn2.0.1.x86_64/jre/bin/java
+
+
+
+jdbc:mysql://sonarqubedb1.cfj1gvq8fwpk.ap-southeast-1.rds.amazonaws.com:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false
+
+
+
+mysql -h sonarqubedb1.czjw6lpzdlon.ap-south-1.rds.amazonaws.com -usonarqubedb1 -p sonarqubedb1
+
+Edit sonar properties file to uncomment and provide required information for below properties.
+
+File Name: /opt/sonar/conf/sonar.properties
+sonar.jdbc.username=sonar
+sonar.jdbc.password=sonar
+sonar.jdbc.url=jdbc:mysql://<RDS_DATABAE_ENDPOINT>:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false
+sonar.web.host=0.0.0.0
+sonar.web.context=/sonar
+Start SonarQube service
+
+# cd /opt/sonar/bin/linux-x86-64/
+# ./sonar.sh start
+
+sonar_jenkins_token: 1cdebb4dc07f3d5c955b65e8f78c715c4b5820a0
+
+project : 2d5a59a742f8b5543f4d767ab61244aa1c7f5b96
+
+sonar: 309d8e6acff246fd460e28102ce02541c2af7ba9
+
+
+
+install java  sudo yum install java-1.8.0
+
+/opt/sonar/bin/linux-x86-64
+
+Do changes in wrapper.conf file: /opt/sonar/conf
+ 
+
+Install sonar plugins in Jenkins
+ 
+Go to sonarqube console with 9000 port and create token 
+Administrator---my account---security
+ 
+Go to Jenkins—manage Jenkins ---configuration system---
+ 
